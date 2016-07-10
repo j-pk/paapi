@@ -21,9 +21,9 @@ class SocialSchema(Schema):
     id = fields.Int(dump_only=False)
     artist = fields.Nested(ArtistSchema, validate=must_not_be_blank)
     website = fields.Str()
-    instagram = fields.Str()
-    twitter = fields.Str()
-    facebook = fields.Str()
+    instagram = fields.Str(allow_none=True)
+    twitter = fields.Str(allow_none=True)
+    facebook = fields.Str(allow_none=True)
 
     @pre_load
     def process_author(self, data):
@@ -42,6 +42,15 @@ class PosterSchema(Schema):
     artist = fields.Nested(ArtistSchema, validate=must_not_be_blank)
     title = fields.Str(required=True, validate=must_not_be_blank)
     year = fields.Int(required=True, validate=must_not_be_blank)
+    release_date = fields.Date(allow_none=True)
+    class_type = fields.Str(allow_none=True)
+    status = fields.Str(allow_none=True)
+    technique = fields.Str(allow_none=True)
+    size = fields.Str(allow_none=True)
+    run_count = fields.Int(allow_none=True)
+    image_url = fields.Str(allow_none=True)
+    original_price = fields.Float(allow_none=True)
+    average_price = fields.Float(allow_none=True)
     date_created = fields.DateTime(dump_only=True)
 
     @pre_load

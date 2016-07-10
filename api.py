@@ -24,7 +24,7 @@ class Artist(db.Model):
 
 class Social(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    website = db.Column(db.String(180))
+    website = db.Column(db.String)
     instagram = db.Column(db.String(80))
     twitter = db.Column(db.String(80))
     facebook = db.Column(db.String(80))
@@ -34,18 +34,27 @@ class Social(db.Model):
 
 class Poster(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120))
+    title = db.Column(db.String)
     year = db.Column(db.Integer)
     artist_id = db.Column(db.Integer, db.ForeignKey("artist.id"))
     artist = db.relationship("Artist", backref=db.backref("posters", lazy="dynamic"))
     date_created = db.Column(db.DateTime)
+    release_date = db.Column(db.DateTime)
+    class_type = db.Column(db.String)
+    status = db.Column(db.String)
+    technique = db.Column(db.String)
+    size = db.Column(db.String(120))
+    run_count = db.Column(db.Integer)
+    image_url = db.Column(db.String)
+    original_price = db.Column(db.Float)
+    average_price = db.Column(db.Float)
 
 
 artist_schema = ArtistSchema()
 artists_schema = ArtistSchema(many=True)
 social_schema = SocialSchema(only=('artist', 'website', 'instagram', 'twitter', 'facebook'))
 poster_schema = PosterSchema()
-posters_schema = PosterSchema(many=True, only=('id', 'year', 'title'))
+posters_schema = PosterSchema(many=True, exclude=('artist', ))
 
 
 #### API ####
@@ -168,10 +177,19 @@ def new_poster():
         db.session.add(artist)
     # Create new poster
     add_poster = Poster(
+        artist=artist,
         title=data['title'],
         year=data['year'],
-        artist=artist,
-        date_created=datetime.datetime.utcnow()
+        date_created=datetime.datetime.utcnow(),
+        release_date=data['release_date'],
+        class_type=data['class_type'],
+        status=data['status'],
+        technique=data['technique'],
+        size=data['size'],
+        run_count=data['run_count'],
+        image_url=data['image_url'],
+        original_price=data['original_price'],
+        average_price=data['average_price']
     )
     db.session.add(add_poster)
     db.session.commit()
