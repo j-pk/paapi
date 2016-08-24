@@ -46,12 +46,17 @@ class PosterSchema(Schema):
     class_type = fields.Str(allow_none=True)
     status = fields.Str(allow_none=True)
     technique = fields.Str(allow_none=True)
-    size = fields.Str(allow_none=True)
+    size = fields.Method('format_size', dump_only=True)
+    width = fields.Int(allow_none=True)
+    height = fields.Int(allow_none=True)
     run_count = fields.Int(allow_none=True)
     image_url = fields.Str(allow_none=True)
     original_price = fields.Float(allow_none=True)
     average_price = fields.Float(allow_none=True)
     date_created = fields.DateTime(dump_only=True)
+
+    def format_size(self, poster):
+        return "{}x{}".format(poster.width, poster.height)
 
     @pre_load
     def process_author(self, data):

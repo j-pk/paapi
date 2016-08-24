@@ -44,6 +44,8 @@ class Poster(db.Model):
     status = db.Column(db.String)
     technique = db.Column(db.String)
     size = db.Column(db.String(120))
+    width = db.Column(db.Integer)
+    height = db.Column(db.Integer)
     run_count = db.Column(db.Integer)
     image_url = db.Column(db.String)
     original_price = db.Column(db.Float)
@@ -52,9 +54,10 @@ class Poster(db.Model):
 
 artist_schema = ArtistSchema()
 artists_schema = ArtistSchema(many=True)
-social_schema = SocialSchema(only=('artist', 'website', 'instagram', 'twitter', 'facebook'))
+social_schema = SocialSchema(only=('website', 'instagram', 'twitter', 'facebook'))
+social_update_schema = SocialSchema(only=('website', 'instagram', 'twitter', 'facebook'))
 poster_schema = PosterSchema()
-posters_schema = PosterSchema(many=True, exclude=('artist', ))
+posters_schema = PosterSchema(many=True, exclude=('artist', 'width', 'height', ))
 
 
 #### API ####
@@ -86,6 +89,46 @@ def get_artist(pk):
         'posters': poster_result.data
     })
 
+@app.route('/artists/<int:pk>', methods=['POST'])
+def update_artist(pk):
+    try:
+        artist = Artist.query.get(pk)
+        db.session.add(artist)
+    except IntegrityError:
+        return jsonify({
+            "Error": "Artist could not be found."
+        }), 400
+
+    json_data = request.get_json()
+    if not json_data:
+        return jsonify({
+            'Error': 'No data provided.'
+        }), 400
+    # Validate and deserializes input
+    data, errors = social_update_schema.load(json_data)
+    if errors:
+        return jsonify, 422
+    website, instagram, twitter, facebook = data['website'], data['instagram'], data['twitter'], data['facebook']
+    query_social = Social.query.get(pk)
+    add_social = Social(
+        id=pk,
+        website=website,
+        instagram=instagram,
+        twitter=twitter,
+        facebook=facebook
+    )
+    if query_social:
+        db.session.delete(query_social)
+    db.session.add(add_social)
+    db.session.commit()
+
+    result = social_update_schema.dump(Social.query.get(add_social.id))
+
+    return jsonify({
+        'message': 'Artist updated.',
+        'artist': artist.first_name + ' ' + artist.last_name,
+        'social': result.data
+    })
 
 @app.route('/artists/', methods=['POST'])
 def add_artist():
@@ -185,7 +228,8 @@ def new_poster():
         class_type=data['class_type'],
         status=data['status'],
         technique=data['technique'],
-        size=data['size'],
+        width=data['width'],
+        height=data['height'],
         run_count=data['run_count'],
         image_url=data['image_url'],
         original_price=data['original_price'],
