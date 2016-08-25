@@ -57,6 +57,7 @@ artists_schema = ArtistSchema(many=True)
 social_schema = SocialSchema(only=('website', 'instagram', 'twitter', 'facebook'))
 social_update_schema = SocialSchema(only=('website', 'instagram', 'twitter', 'facebook'))
 poster_schema = PosterSchema()
+poster_artist_schema = PosterSchema(exclude=('artist', ))
 posters_schema = PosterSchema(many=True, exclude=('artist', 'width', 'height', ))
 
 
@@ -178,6 +179,48 @@ def add_artist():
         'artist': result.data
     })
 
+@app.route('/artists/<int:pk>/poster', methods=['POST'])
+def add_artist_poster(pk):
+    try:
+        artist = Artist.query.get(pk)
+        db.session.add(artist)
+    except IntegrityError:
+        return jsonify({
+            "Error": "Artist could not be found."
+        }), 400
+
+    json_data = request.get_json()
+    if not json_data:
+        return jsonify({
+            'Error': 'No data provided.'
+        }), 400
+    data, errors = poster_artist_schema.load(json_data)
+    if errors:
+        return jsonify, 422
+    # Create new poster
+    add_poster = Poster(
+        artist=artist,
+        title=data['title'],
+        year=data['year'],
+        date_created=datetime.datetime.utcnow(),
+        release_date=data['release_date'],
+        class_type=data['class_type'],
+        status=data['status'],
+        technique=data['technique'],
+        width=data['width'],
+        height=data['height'],
+        run_count=data['run_count'],
+        image_url=data['image_url'],
+        original_price=data['original_price'],
+        average_price=data['average_price']
+    )
+    db.session.add(add_poster)
+    db.session.commit()
+    result = poster_schema.dump(Poster.query.get(add_poster.id))
+    return jsonify({
+        'message': 'New poster added.',
+        'poster': result.data
+    })
 
 @app.route('/posters/', methods=['GET'])
 def get_posters():
@@ -203,7 +246,7 @@ def get_poster(pk):
 
 
 @app.route('/posters/', methods=['POST'])
-def new_poster():
+def add_poster():
     json_data = request.get_json()
     if not json_data:
         return jsonify({
