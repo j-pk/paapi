@@ -80,6 +80,10 @@ def get_artist(pk):
         return jsonify({
             "Error": "Artist could not be found."
         }), 400
+    if artist is None:
+        return jsonify({
+            "Error": "Artist could not be found."
+        }), 400
     artist_result = artist_schema.dump(artist)
     social_result = social_schema.dump(social)
     poster_result = posters_schema.dump(artist.posters.all())
