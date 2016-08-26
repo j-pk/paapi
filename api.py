@@ -110,9 +110,16 @@ def update_artist(pk):
             'Error': 'No data provided.'
         }), 400
     # Validate and deserializes input
-    data, errors = social_update_schema.load(json_data)
-    if errors:
-        return jsonify, 422
+    try:
+        data, errors = social_update_schema.load(json_data)
+        if errors:
+            return jsonify(
+                errors
+            ), 400
+    except TypeError:
+        return jsonify({
+            'Error': 'Bad Request'
+        }), 400
     website, instagram, twitter, facebook = data['website'], data['instagram'], data['twitter'], data['facebook']
     query_social = Social.query.get(pk)
     add_social = Social(
@@ -143,9 +150,16 @@ def add_artist():
             'Error': 'No data provided.'
         }), 400
     # Validate and deserializes input
-    data, errors = social_schema.load(json_data)
-    if errors:
-        return jsonify, 422
+    try:
+        data, errors = social_schema.load(json_data)
+        if errors:
+            return jsonify(
+                errors
+            ), 400
+    except TypeError:
+        return jsonify({
+            'Error': 'Bad Request'
+        }), 400
     website, instagram, twitter, facebook = data['website'], data['instagram'], data['twitter'], data['facebook']
     add_social = Social.query.filter_by(website=website).first()
     first, last = data['artist']['first_name'], data['artist']['last_name']
@@ -194,9 +208,16 @@ def add_artist_poster(pk):
         return jsonify({
             'Error': 'No data provided.'
         }), 400
-    data, errors = poster_artist_schema.load(json_data)
-    if errors:
-        return jsonify, 422
+    try:
+        data, errors = poster_artist_schema.load(json_data)
+        if errors:
+            return jsonify(
+                errors
+            ), 400
+    except TypeError:
+        return jsonify({
+            'Error': 'Bad Request'
+        }), 400
     # Create new poster
     add_poster = Poster(
         artist=artist,
@@ -252,10 +273,19 @@ def add_poster():
         return jsonify({
             'Error': 'No data provided.'
         }), 400
+
     # Validate and deserializes input
-    data, errors = poster_schema.load(json_data)
-    if errors:
-        return jsonify, 422
+    try:
+        data, errors = poster_schema.load(json_data)
+        if errors:
+            return jsonify(
+                errors
+            ), 400
+    except TypeError:
+        return jsonify({
+            'Error': 'Bad Request'
+        }), 400
+
     first, last = data['artist']['first_name'], data['artist']['last_name']
     artist = Artist.query.filter_by(first_name=first, last_name=last).first()
     if artist is None:

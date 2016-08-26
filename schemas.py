@@ -28,7 +28,7 @@ class SocialSchema(Schema):
     @pre_load
     def process_author(self, data):
         artist_name = data.get('artist')
-        if artist_name:
+        if artist_name and type(artist_name) == str:
             first_name, last_name = artist_name.split(' ')
             artist_dict = dict(first_name=first_name, last_name=last_name)
         else:
@@ -61,11 +61,11 @@ class PosterSchema(Schema):
     @pre_load
     def process_author(self, data):
         artist_name = data.get('artist')
-        if artist_name:
+        if artist_name and type(artist_name) == str:
             first_name, last_name = artist_name.split(' ')
             artist_dict = dict(first_name=first_name, last_name=last_name)
         else:
-            artist_dict = {}
+            raise TypeError
         data['artist'] = artist_dict
         return data
 
